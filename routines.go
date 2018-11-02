@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-	"fmt"
+	//	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -10,11 +10,9 @@ import (
 )
 
 //read and parse the lines from selected file
-func readLinesFromFile(fileName string, fileReadingTimeout time.Duration) {
+func readLinesFromFile(outChannel chan<- logRecord, fileName string, fileReadingTimeout time.Duration) {
 	var startLineNumber uint = 0
 	var fileLastModifiedTime time.Time = time.Unix(0, 0)
-
-	fmt.Println("unix", fileLastModifiedTime)
 
 	for {
 		var currentLogRecord logRecord
@@ -51,7 +49,8 @@ func readLinesFromFile(fileName string, fileReadingTimeout time.Duration) {
 							} else {
 								currentLogRecord.log_time = logTime
 								currentLogRecord.log_format = formatNumber
-								fmt.Println(currentLogRecord)
+								outChannel <- currentLogRecord
+								//fmt.Println(currentLogRecord)
 								break
 							}
 						}
@@ -61,9 +60,9 @@ func readLinesFromFile(fileName string, fileReadingTimeout time.Duration) {
 			if err := scanner.Err(); err != nil {
 				log.Fatal(err)
 			}
-			
+
 			startLineNumber = currentLineNumber + 1
-			fmt.Println("next Line Number", startLineNumber)
+			//fmt.Println("next Line Number", startLineNumber)
 		}
 		fileLastModifiedTime = fileModifiedTime
 		time.Sleep(fileReadingTimeout * time.Millisecond)

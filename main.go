@@ -3,9 +3,9 @@ package main
 import (
 	//	"bufio"
 	"fmt"
-	//	"log"
+	//"log"
 	"os"
-	//	"strings"
+	//"strings"
 	"time"
 )
 
@@ -21,19 +21,34 @@ var logTimeLayout = map[string]string{
 	"second_format": "2006-01-02T15:04:05Z07:00",
 }
 
+const dataChannelBuffer = 100
+
+const fileCheckTimeout = 1000
+
 //main
 func main() {
 	logfilesList := os.Args[1:]
 	fmt.Println("\nStarted")
 
 	if len(logfilesList) == 0 {
-		//logfilesList = append(logfilesList, "data3.dat", "data2.dat", "data1.dat")
-		logfilesList = append(logfilesList, "data1.dat")
+		logfilesList = append(logfilesList, "data3.dat", "data2.dat", "data1.dat")
 		//fmt.Println("usage: logParser filename.dat ...")
+		//log.Fatal("wrong usage")
 	}
 
+	dataChannel := make(chan logRecord, dataChannelBuffer)
+
 	for filenameIndex := range logfilesList {
-		readLinesFromFile(logfilesList[filenameIndex], 1000)
+		fmt.Println("run parser for", logfilesList[filenameIndex])
+		go readLinesFromFile(dataChannel, logfilesList[filenameIndex], fileCheckTimeout)
 	}
+
+	for {
+		for currentLogRecord := range dataChannel {
+			fmt.Println("<-", currentLogRecord)
+		}
+	}
+
+	fmt.Scanln()
 
 }
