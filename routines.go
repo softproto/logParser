@@ -62,8 +62,8 @@ func readLinesFromFile(outChannel chan<- logRecord, fileName string, fileReading
 			}
 
 			startLineNumber = currentLineNumber + 1
-			//fmt.Println("next Line Number", startLineNumber)
 		}
+		
 		fileLastModifiedTime = fileModifiedTime
 		time.Sleep(fileReadingTimeout * time.Millisecond)
 		fileHandler.Close()
