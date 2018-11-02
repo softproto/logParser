@@ -3,8 +3,9 @@ package main
 import (
 	//	"bufio"
 	"fmt"
-	//"log"
+	"log"
 	"os"
+
 	//"strings"
 	"time"
 )
@@ -30,9 +31,9 @@ func main() {
 	logfilesList := os.Args[1:]
 
 	if len(logfilesList) == 0 {
-		logfilesList = append(logfilesList, "data3.dat", "data2.dat", "data1.dat")
-		//fmt.Println("usage: logParser filename.dat ...")
-		//log.Fatal("wrong usage")
+		//logfilesList = append(logfilesList, "data3.dat", "data2.dat", "data1.dat")
+		fmt.Println("usage: logParser filename.dat ...")
+		log.Fatal("wrong usage")
 	}
 
 	fmt.Println("\nStarted for:", logfilesList)
