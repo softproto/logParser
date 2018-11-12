@@ -5,13 +5,15 @@ import (
 	"log"
 	"os"
 	"time"
+
+	"gopkg.in/mgo.v2"
 )
 
-type logRecord struct {
-	log_time    time.Time
-	log_message string
-	file_name   string
-	log_format  string
+type LogRecord struct {
+	Log_time    time.Time `bson:"log_time"`
+	Log_message string    `bson:"log_message"`
+	File_name   string    `bson:"file_name"`
+	Log_format  string    `bson:"log_format"`
 }
 
 var logTimeLayout = map[string]string{
@@ -20,22 +22,33 @@ var logTimeLayout = map[string]string{
 }
 
 const dataChannelBuffer = 100
-
 const fileCheckTimeout = 1000
+
+const databaseURL = "mongodb://localhost"
+const databaseName = "logDatabase"
+const collectionName = "logRecords"
 
 //main
 func main() {
 	logfilesList := os.Args[1:]
 
 	if len(logfilesList) == 0 {
-		//logfilesList = append(logfilesList, "data3.dat", "data2.dat", "data1.dat")
-		fmt.Println("usage: logParser filename.dat ...")
-		log.Fatal("wrong usage")
+		logfilesList = append(logfilesList, "data3.dat", "data2.dat", "data1.dat")
+		//fmt.Println("usage: logParser filename.dat [...]")
+		//log.Fatal("wrong usage")
 	}
 
 	fmt.Println("\nStarted for:", logfilesList)
 
-	dataChannel := make(chan logRecord, dataChannelBuffer)
+	dataChannel := make(chan LogRecord, dataChannelBuffer)
+
+	session, err := mgo.Dial(databaseURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer session.Close()
+
+	logCollection := session.DB(databaseName).C(collectionName)
 
 	for filenameIndex := range logfilesList {
 		fmt.Println("run parser for", logfilesList[filenameIndex])
@@ -45,11 +58,15 @@ func main() {
 
 	for {
 		for currentLogRecord := range dataChannel {
+			err = logCollection.Insert(currentLogRecord)
+			if err != nil {
+				log.Fatal(err)
+			}
 			fmt.Println("\n<-New log record")
-			fmt.Println("log_time:", currentLogRecord.log_time)
-			fmt.Println("log_message:", currentLogRecord.log_message)
-			fmt.Println("file_name:", currentLogRecord.file_name)
-			fmt.Println("log_format:", currentLogRecord.log_format)
+			fmt.Println("log_time:", currentLogRecord.Log_time)
+			fmt.Println("log_message:", currentLogRecord.Log_message)
+			fmt.Println("file_name:", currentLogRecord.File_name)
+			fmt.Println("log_format:", currentLogRecord.Log_format)
 		}
 	}
 

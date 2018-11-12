@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	//	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -10,12 +9,12 @@ import (
 )
 
 //read and parse the lines from selected file
-func readLinesFromFile(outChannel chan<- logRecord, fileName string, fileReadingTimeout time.Duration) {
+func readLinesFromFile(outChannel chan<- LogRecord, fileName string, fileReadingTimeout time.Duration) {
 	var startLineNumber uint = 0
 	var fileLastModifiedTime time.Time = time.Unix(0, 0)
 
 	for {
-		var currentLogRecord logRecord
+		var currentLogRecord LogRecord
 		var rawLogString string
 		var currentLineNumber uint = 0
 
@@ -36,19 +35,19 @@ func readLinesFromFile(outChannel chan<- logRecord, fileName string, fileReading
 			for scanner.Scan() {
 				currentLineNumber++
 				if currentLineNumber >= startLineNumber {
-					currentLogRecord.file_name = fileName
+					currentLogRecord.File_name = fileName
 					rawLogString = scanner.Text()
 					splittedLines := strings.Split(rawLogString, " | ")
 					if len(splittedLines) == 2 {
-						currentLogRecord.log_message = splittedLines[1]
+						currentLogRecord.Log_message = splittedLines[1]
 						for formatNumber, layoutString := range logTimeLayout {
 							logTime, err := time.Parse(layoutString, splittedLines[0])
 							if err != nil {
 								//log.Fatal(err)
-								currentLogRecord.log_format = "unknown format"
+								currentLogRecord.Log_format = "unknown format"
 							} else {
-								currentLogRecord.log_time = logTime
-								currentLogRecord.log_format = formatNumber
+								currentLogRecord.Log_time = logTime
+								currentLogRecord.Log_format = formatNumber
 								outChannel <- currentLogRecord
 								//fmt.Println(currentLogRecord)
 								break
@@ -63,7 +62,7 @@ func readLinesFromFile(outChannel chan<- logRecord, fileName string, fileReading
 
 			startLineNumber = currentLineNumber + 1
 		}
-		
+
 		fileLastModifiedTime = fileModifiedTime
 		time.Sleep(fileReadingTimeout * time.Millisecond)
 		fileHandler.Close()
